@@ -1,6 +1,8 @@
 import torchvision
 from torch import nn, Tensor, load
+
 import math
+from math_utils import is_power_of_two
 
 
 class ConvolutionalBlock(nn.Module):
@@ -63,6 +65,8 @@ class SubPixelConvolutionalBlock(nn.Module):
             n_channels: int = 64,
             scaling_factor: int = 2
     ):
+        assert is_power_of_two(scaling_factor), "Scaling factor must be a power of 2"
+
         # Convolutional block, comprising convolutional, pixel-shuffle, and PReLU activation layers.
         super(SubPixelConvolutionalBlock, self).__init__()
 
@@ -147,6 +151,8 @@ class SRResNet(nn.Module):
             # factor to scale input images by (along both dimensions) in the subpixel convolutional block (pow of 2)
             scaling_factor: int = 4
     ):
+        assert is_power_of_two(scaling_factor), "Scaling factor must be a power of 2"
+
         # The super image resolution generator
         super(SRResNet, self).__init__()
 

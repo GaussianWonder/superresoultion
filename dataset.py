@@ -5,7 +5,7 @@ from os import path
 from glob import glob
 from PIL import Image
 
-from math import is_power_of_two
+from math_utils import is_power_of_two
 
 
 class SuperResolutionDataset(Dataset):
