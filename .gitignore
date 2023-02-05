@@ -1,0 +1,8 @@
+assets/
+test_assets/
+temp/
+__pycache__/
+./**/__pycache__/
+.idea/
+venv/
+.mypy_cache/*
