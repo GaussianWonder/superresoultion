@@ -2,7 +2,7 @@ import torchvision
 from torch import nn, Tensor, load
 
 import math
-from math_utils import is_power_of_two
+from utils.math_utils import is_power_of_two
 
 
 class ConvolutionalBlock(nn.Module):

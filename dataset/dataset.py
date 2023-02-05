@@ -1,11 +1,11 @@
-import torch
+from typing import Optional, Callable
+
 from torch.utils.data import Dataset
-import json
 from os import path
 from glob import glob
 from PIL import Image
 
-from math_utils import is_power_of_two
+from utils.math_utils import is_power_of_two
 
 
 class SuperResolutionDataset(Dataset):
@@ -14,7 +14,11 @@ class SuperResolutionDataset(Dataset):
     scaling_factor: int  # 2, 4, 8, ...
     image_count: int  # static for the lifetime of the Dataset, precalculated to not waste time on len()
 
-    def __init__(self, data_path: str, scaling_factor: int = 2):
+    # the transformation to apply on each requested image
+    # https://pytorch.org/tutorials/beginner/data_loading_tutorial.html
+    transform: Optional[Callable]
+
+    def __init__(self, data_path: str, scaling_factor: int = 2, transform: Optional[Callable] = None):
         assert path.exists(data_path) and path.isdir(data_path), "Data path must be a valid directory"
         assert is_power_of_two(scaling_factor), "Scaling factor must be a power of 2"
 
@@ -22,11 +26,14 @@ class SuperResolutionDataset(Dataset):
         self.scaling_factor = int(scaling_factor)
         self.images = supported_images_in_dir(self.data_path)
         self.image_count = len(self.images)
+        self.transform = transform
 
     def __getitem__(self, i: int):
         img = Image.open(self.images[i], mode='r')
         img.convert('RGB')
-        return None
+        if self.transform:
+            return self.transform(img)
+        return img
 
     def __len__(self):
         return self.image_count
