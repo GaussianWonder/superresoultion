@@ -11,19 +11,16 @@ from utils.math_utils import is_power_of_two
 class SuperResolutionDataset(Dataset):
     images: list[str]  # image paths with supported extensions
     data_path: str  # valid path
-    scaling_factor: int  # 2, 4, 8, ...
     image_count: int  # static for the lifetime of the Dataset, precalculated to not waste time on len()
 
     # the transformation to apply on each requested image
     # https://pytorch.org/tutorials/beginner/data_loading_tutorial.html
     transform: Optional[Callable]
 
-    def __init__(self, data_path: str, scaling_factor: int = 2, transform: Optional[Callable] = None):
+    def __init__(self, data_path: str, transform: Optional[Callable] = None):
         assert path.exists(data_path) and path.isdir(data_path), "Data path must be a valid directory"
-        assert is_power_of_two(scaling_factor), "Scaling factor must be a power of 2"
 
         self.data_path = data_path
-        self.scaling_factor = int(scaling_factor)
         self.images = supported_images_in_dir(self.data_path)
         self.image_count = len(self.images)
         self.transform = transform
