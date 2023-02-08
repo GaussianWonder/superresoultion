@@ -98,6 +98,7 @@ def train(
                     avg=loss_value.avg
                 )
             )
+            print('')
 
     del LRs, HRs, SRs
 
