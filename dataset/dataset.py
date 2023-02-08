@@ -36,9 +36,13 @@ class SuperResolutionDataset(Dataset):
         return self.image_count
 
 
+EXTS = Image.registered_extensions()
+SUPPORTED_EXTENSIONS = [ex[1:] if ex.startswith('.') else ex for ex, f in EXTS.items() if f in Image.OPEN]
+WANTED_EXTENSIONS = [ex for ex in ['png', 'jpg', 'jpeg'] if ex in SUPPORTED_EXTENSIONS]
+
+
 def supported_images_in_dir(directory: str) -> list[str]:
-    supported_extensions = [ext for ext, _ in Image.EXTENSION.items()]
-    return glob(path.join(
-        directory,
-        f"*.{'|'.join(supported_extensions)}"
-    ))
+    paths: list[str] = []
+    for ext in WANTED_EXTENSIONS:
+        paths.extend(glob(path.join(directory, f"*.{ext}")))
+    return paths

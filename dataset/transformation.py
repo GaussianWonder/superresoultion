@@ -1,3 +1,5 @@
+from typing import Union
+
 from PIL import Image
 from torch import matmul, Tensor
 from torchvision.transforms.functional import to_tensor, to_pil_image
@@ -47,8 +49,8 @@ class ImageTransform(object):
     def cropping_rectangle(self, w: int, h: int):
         """
         Resolve the cropping rectangle params based on width and height of an image
-        :param w: image width
-        :param h: image height
+        :param w: width
+        :param h: height
         :return: rectangle bound of a chosen region to crop from the image
         """
         if self.crop_size is None:
@@ -69,12 +71,12 @@ class ImageTransform(object):
             return x1, y1, x2, y2
 
 
-def resolve_to_tensor(img: Image | Tensor):
+def resolve_to_tensor(img: Union[Image.Image, Tensor]):
     # return tensor with pixel value range of [0, 1]
     return img if isinstance(img, Tensor) else to_tensor(img)
 
 
-def resolve_to_image(img: Image | Tensor):
+def resolve_to_image(img: Union[Image.Image, Tensor]):
     # return PIL.Image (pixel value range is expected to be [0, 1])
     return to_pil_image(img) if isinstance(img, Tensor) else img
 
@@ -99,7 +101,7 @@ def resolve_domain_space(img_tensor: Tensor, contract: bool = False):
     return img_tensor if contract is False else contract_domain(img_tensor)
 
 
-def y_luminescence(img: Image | Tensor, contract: bool = False):
+def y_luminescence(img: Union[Image.Image, Tensor], contract: bool = False):
     """
     Extract Y luminance channel in YCbCr color format. Used to calculate PSNR and SSIM.
     This features multi parameter input types
@@ -113,7 +115,7 @@ def y_luminescence(img: Image | Tensor, contract: bool = False):
     return matmul(255. * img_tensor.permute(0, 2, 3, 1)[:, 4:-4, 4:-4, :], RGB_WEIGHTS) / 255. + 16.
 
 
-def imagenet_norm(img: Image | Tensor, contract: bool = False):
+def imagenet_norm(img: Union[Image.Image, Tensor], contract: bool = False):
     """
     Pixel values standardized by imagenet mean and std with multi parameter input types
     :param img: Image or Tensor
@@ -130,7 +132,7 @@ def imagenet_norm(img: Image | Tensor, contract: bool = False):
         return (img_tensor - IMAGENET_MEAN_CUDA) / IMAGENET_STD_CUDA
 
 
-def uchar_norm(img: Image | Tensor, contract: bool = False):
+def uchar_norm(img: Union[Image.Image, Tensor], contract: bool = False):
     # Return tensor with pixel values range normalized to uchar range [0, 255]
     img_tensor = resolve_to_tensor(img)
     if isinstance(img, Tensor):

@@ -70,7 +70,7 @@ class Main(object):
                 scaling_factor=scaling_factor,
             )
             optimizer = torch.optim.Adam(
-                params=filter(lambda p: p.require_grad, model.parameters()),
+                params=filter(lambda p: p.requires_grad, model.parameters()),
                 lr=learning_rate,
             )
         else:
@@ -79,7 +79,7 @@ class Main(object):
             model = checkpoint['model']
             optimizer = checkpoint['optimizer']
 
-        checkpoint_save = '{name}.pth'.format(name=random_string())
+        checkpoint_save = checkpoint_path if checkpoint_path is not None else '{name}.pth'.format(name=random_string())
         print('This processing session will be saved into {file_name}'.format(file_name=checkpoint_save))
         model = model.to(DEVICE)
         criterion = nn.MSELoss().to(DEVICE)
