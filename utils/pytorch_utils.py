@@ -1,6 +1,7 @@
 import torch
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# DEVICE = 'cpu'
 
 # 0.2989, 0.5870, 0.1140 in terms of perceived visibility
 RGB_WEIGHTS = torch.FloatTensor([65.481, 128.553, 24.966]).to(DEVICE)

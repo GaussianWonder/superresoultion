@@ -8,3 +8,7 @@ venv/
 .mypy_cache/*
 *.pth
 output.log
+output
+outfile.log
+outfile
+*.log

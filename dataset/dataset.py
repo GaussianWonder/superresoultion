@@ -5,13 +5,10 @@ from os import path
 from glob import glob
 from PIL import Image
 
-from utils.math_utils import is_power_of_two
-
 
 class SuperResolutionDataset(Dataset):
     images: list[str]  # image paths with supported extensions
     data_path: str  # valid path
-    image_count: int  # static for the lifetime of the Dataset, precalculated to not waste time on len()
 
     # the transformation to apply on each requested image
     # https://pytorch.org/tutorials/beginner/data_loading_tutorial.html
@@ -22,7 +19,6 @@ class SuperResolutionDataset(Dataset):
 
         self.data_path = data_path
         self.images = supported_images_in_dir(self.data_path)
-        self.image_count = len(self.images)
         self.transform = transform
 
     def __getitem__(self, i: int):
@@ -33,7 +29,7 @@ class SuperResolutionDataset(Dataset):
         return img
 
     def __len__(self):
-        return self.image_count
+        return len(self.images)
 
 
 EXTS = Image.registered_extensions()

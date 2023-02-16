@@ -6,10 +6,11 @@ import torch.backends.cudnn as cudnn
 import torch.optim
 from torch.utils.data import DataLoader
 
+from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from dataset.dataset import SuperResolutionDataset
-from dataset.transformation import ImageTransform
+from dataset.transformation import ImageTransform, y_luminescence, resolve_to_image, contract_domain, imagenet_norm
 from model import SRResNet
-from train import train
+from train import train, ValueTracker
 from utils.math_utils import random_string
 from utils.pytorch_utils import DEVICE
 
@@ -29,12 +30,12 @@ class Main(object):
 
             checkpoint_path: str | None = None,
 
-            batch_size: int = 16,
+            batch_size: int = 32,
             start_epoch: int = 0,
-            iterations: int = 1000000,
+            iterations: int = 1000,
             workers: int = 4,
-            print_freq: int = 500,
-            learning_rate: float = 1e-4,
+            print_freq: int = 100,
+            learning_rate: float = 0.001,
 
             cudnn_benchmark: bool = True,
     ):
@@ -95,6 +96,13 @@ class Main(object):
         data_loader = DataLoader(dataset, batch_size=batch_size, shuffle=True, num_workers=workers, pin_memory=True)
 
         epochs = int(iterations // len(data_loader) + 1)
+        print(
+            "{iterations} iterations from a total of {count} entries results in {total} epochs".format(
+                iterations=iterations,
+                count=len(data_loader),
+                total=epochs,
+            )
+        )
 
         for epoch in range(start_epoch, epochs):
             train(
@@ -114,6 +122,95 @@ class Main(object):
                 },
                 checkpoint_save
             )
+
+    @staticmethod
+    def evaluate(
+            checkpoint_path: str,
+            assets: str = './assets',
+
+            scaling_factor: int = 4,
+
+            workers: int = 4,
+    ):
+        dataset = SuperResolutionDataset(
+            data_path=assets,
+            transform=ImageTransform(
+                scaling_factor=scaling_factor,
+                crop_size=None,
+            )
+        )
+        loader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=workers, pin_memory=True)
+
+        checkpoint = torch.load(checkpoint_path)
+        model = checkpoint['model']
+        model = model.to(DEVICE)
+
+        SSs = ValueTracker[float]()
+        PSNRs = ValueTracker[float]()
+
+        with torch.no_grad():
+            for i, (LRs, HRs) in enumerate(loader):
+                LRs = LRs.to(DEVICE)  # (1, 3, w / 4, h / 4), imagenet-normed
+                HRs = HRs.to(DEVICE)  # (1, 3, w, h), in [-1, 1]
+
+                SRs = model(LRs)  # (1, 3, w, h), in [-1, 1]
+
+                SRy = y_luminescence(img=SRs, contract=True)
+                HRy = y_luminescence(img=HRs, contract=True)
+
+                PSNR = peak_signal_noise_ratio(
+                    HRy.cpu().numpy(),
+                    SRy.cpu().numpy(),
+                    data_range=255.
+                )
+                SS = structural_similarity(
+                    HRy.cpu().numpy(),
+                    SRy.cpu().numpy(),
+                    data_range=255.
+
+                )
+
+                PSNRs.update(PSNR, LRs.size(0))
+                SSs.update(SS, LRs.size(0))
+
+    @staticmethod
+    def compare(
+            checkpoint_path: str,
+            assets: str = './assets',
+
+            scaling_factor: int = 4,
+
+            workers: int = 4,
+            index: int = 0,
+    ):
+        dataset = SuperResolutionDataset(
+            data_path=assets,
+            transform=ImageTransform(
+                scaling_factor=scaling_factor,
+                crop_size=None,
+            )
+        )
+        loader = DataLoader(dataset, batch_size=1, shuffle=False, num_workers=workers, pin_memory=True)
+
+        assert index < len(dataset), "Index {idx} is not available in the dataset".format(idx=index)
+
+        checkpoint = torch.load(checkpoint_path)
+        model = checkpoint['model'].to(DEVICE)
+
+        with torch.no_grad():
+            for i, (_, HRs) in enumerate(loader):
+                if i == index:
+                    HRs = HRs.to(DEVICE)  # (1, 3, w, h), in [-1, 1]
+
+                    init_pixel_value = contract_domain(HRs)  # in [0, 1]
+                    imagenet_normalized = imagenet_norm(init_pixel_value)  # imagenet normed
+
+                    SRs = model(imagenet_normalized)
+
+                    generated_mapped = contract_domain(SRs.squeeze(0))
+                    generated_image = resolve_to_image(generated_mapped)
+
+                    generated_image.show()
 
 
 if __name__ == '__main__':
