@@ -10,7 +10,7 @@ from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from dataset.dataset import SuperResolutionDataset
 from dataset.transformation import ImageTransform, y_luminescence, resolve_to_image, contract_domain, imagenet_norm
 from model import SRResNet
-from train import train, ValueTracker
+from train import train, ValueTracker, now
 from utils.math_utils import random_string
 from utils.pytorch_utils import DEVICE
 import os
@@ -98,13 +98,15 @@ class Main(object):
 
         epochs = int(iterations // len(data_loader) + 1)
         print(
-            "{iterations} iterations from a total of {count} entries results in {total} epochs".format(
+            "{iterations} iterations from a total of {count} batches in {total} epochs".format(
                 iterations=iterations,
                 count=len(data_loader),
                 total=epochs,
             )
         )
 
+        batch_start = now()
+        batch_time = ValueTracker[float]()
         for epoch in range(start_epoch, epochs):
             train(
                 loader=data_loader,
@@ -122,6 +124,16 @@ class Main(object):
                     'optimizer': optimizer,
                 },
                 checkpoint_save
+            )
+
+            batch_time.update(now() - batch_start)
+            batch_start = now()
+            # TODO make this print statement a function inside the value tracker
+            print(
+                'Epoch total time: {current:.3f} avg to {avg:.3f}'.format(
+                    current=batch_time.current,
+                    avg=batch_time.avg
+                )
             )
 
     @staticmethod
