@@ -40,5 +40,5 @@ WANTED_EXTENSIONS = [ex for ex in ['jpg', 'jpeg'] if ex in SUPPORTED_EXTENSIONS]
 def supported_images_in_dir(directory: str) -> list[str]:
     paths: list[str] = []
     for ext in WANTED_EXTENSIONS:
-        paths.extend(glob(path.join(directory, f"*.{ext}")))
+        paths.extend(glob(path.join(directory, f"**/*.{ext}")))
     return paths
