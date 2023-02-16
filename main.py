@@ -130,11 +130,12 @@ class Main(object):
             batch_start = now()
             # TODO make this print statement a function inside the value tracker
             print(
-                'Epoch total time: {current:.3f} avg to {avg:.3f}'.format(
+                '\tEpoch total time: {current:.3f} avg to {avg:.3f}'.format(
                     current=batch_time.current,
                     avg=batch_time.avg
                 )
             )
+            print('')
 
     @staticmethod
     def evaluate(

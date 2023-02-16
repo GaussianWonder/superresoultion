@@ -79,7 +79,7 @@ def train(
         start_time = now()
 
         if i % print_frequency == 0:
-            print('Epoch {epoch}: {current}/{total}'.format(epoch=epoch, current=i, total=len(loader)))
+            print('\tEpoch {epoch}: {current}/{total}'.format(epoch=epoch, current=i, total=len(loader)))
             print(
                 'Processing time: {current:.3f} avg to {avg:.3f}'.format(
                     current=processing_time.current,
