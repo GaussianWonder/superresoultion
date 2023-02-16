@@ -1,7 +1,21 @@
 import torch
 
+
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # DEVICE = 'cpu'
+
+
+def preferred_device(device_preference: str):
+    # TODO make this work
+    # global DEVICE
+    #
+    # assert device_preference in ['auto', 'cpu', 'cuda'], 'The device parameter must be one of "auto", "cpu" or "cuda"'
+    # if device_preference == 'auto':
+    #     return DEVICE
+    #
+    # DEVICE = device_preference
+    return DEVICE
+
 
 # 0.2989, 0.5870, 0.1140 in terms of perceived visibility
 RGB_WEIGHTS = torch.FloatTensor([65.481, 128.553, 24.966]).to(DEVICE)

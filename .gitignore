@@ -13,3 +13,4 @@ outfile.log
 outfile
 *.log
 scripts/train_*.sh
+scripts/test_*.sh

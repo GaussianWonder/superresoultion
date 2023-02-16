@@ -132,6 +132,18 @@ def imagenet_norm(img: Union[Image.Image, Tensor], contract: bool = False):
         return (img_tensor - IMAGENET_MEAN_CUDA) / IMAGENET_STD_CUDA
 
 
+def reverse_imagenet_norm(img: Tensor):
+    """
+    Reverse the imagenet normalization
+    :param img: Tensor of the image
+    :return: Tensor with pixel values range of [0, 1]
+    """
+    if img.ndimension() == 3:
+        return (img * IMAGENET_STD) + IMAGENET_MEAN
+    elif img.ndimension() == 4:
+        return (img * IMAGENET_STD_CUDA) + IMAGENET_MEAN_CUDA
+
+
 def uchar_norm(img: Union[Image.Image, Tensor], contract: bool = False):
     # Return tensor with pixel values range normalized to uchar range [0, 255]
     img_tensor = resolve_to_tensor(img)

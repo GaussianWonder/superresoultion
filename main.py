@@ -8,12 +8,14 @@ from torch.utils.data import DataLoader
 
 from skimage.metrics import peak_signal_noise_ratio, structural_similarity
 from dataset.dataset import SuperResolutionDataset
-from dataset.transformation import ImageTransform, y_luminescence, resolve_to_image, contract_domain, imagenet_norm
+from dataset.transformation import ImageTransform, y_luminescence, resolve_to_image, contract_domain, imagenet_norm, \
+    reverse_imagenet_norm
 from model import SRResNet
 from train import train, ValueTracker, now
 from utils.math_utils import random_string
-from utils.pytorch_utils import DEVICE
 import os
+
+from utils.pytorch_utils import preferred_device
 
 
 class Main(object):
@@ -39,6 +41,8 @@ class Main(object):
             learning_rate: float = 0.001,
 
             cudnn_benchmark: bool = False,
+
+            device: str = 'auto',
     ):
         """
         Start the training process with the given parameters
@@ -57,9 +61,11 @@ class Main(object):
         :param print_freq: Batch frequency log printing
         :param learning_rate: Learning rate
         :param cudnn_benchmark: Set cudnn.benchmark to this value
+        :param device: Set the preferred processing device
         :return: void
         """
         cudnn.benchmark = cudnn_benchmark
+        DEVICE = preferred_device(device)
 
         model = None
         optimizer = None
@@ -145,7 +151,11 @@ class Main(object):
             scaling_factor: int = 4,
 
             workers: int = 4,
+
+            device: str = 'auto',
     ):
+        DEVICE = preferred_device(device)
+
         dataset = SuperResolutionDataset(
             data_path=assets,
             transform=ImageTransform(
@@ -196,7 +206,11 @@ class Main(object):
 
             workers: int = 4,
             index: int = 0,
+
+            device: str = 'auto',
     ):
+        DEVICE = preferred_device(device)
+
         dataset = SuperResolutionDataset(
             data_path=assets,
             transform=ImageTransform(
@@ -212,7 +226,7 @@ class Main(object):
         model = checkpoint['model'].to(DEVICE)
 
         with torch.no_grad():
-            for i, (_, HRs) in enumerate(loader):
+            for i, (LRs, HRs) in enumerate(loader):
                 if i == index:
                     HRs = HRs.to(DEVICE)  # (1, 3, w, h), in [-1, 1]
 
