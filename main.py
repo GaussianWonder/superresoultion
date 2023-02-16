@@ -13,6 +13,7 @@ from model import SRResNet
 from train import train, ValueTracker
 from utils.math_utils import random_string
 from utils.pytorch_utils import DEVICE
+import os
 
 
 class Main(object):
@@ -62,7 +63,7 @@ class Main(object):
 
         model = None
         optimizer = None
-        if checkpoint_path is None:
+        if checkpoint_path is None or not os.path.exists(checkpoint_path):
             model = SRResNet(
                 large_kernel_size=large_kernel_size,
                 small_kernel_size=small_kernel_size,
