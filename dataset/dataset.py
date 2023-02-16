@@ -34,7 +34,7 @@ class SuperResolutionDataset(Dataset):
 
 EXTS = Image.registered_extensions()
 SUPPORTED_EXTENSIONS = [ex[1:] if ex.startswith('.') else ex for ex, f in EXTS.items() if f in Image.OPEN]
-WANTED_EXTENSIONS = [ex for ex in ['png', 'jpg', 'jpeg'] if ex in SUPPORTED_EXTENSIONS]
+WANTED_EXTENSIONS = [ex for ex in ['jpg', 'jpeg'] if ex in SUPPORTED_EXTENSIONS]
 
 
 def supported_images_in_dir(directory: str) -> list[str]:
