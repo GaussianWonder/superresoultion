@@ -37,7 +37,7 @@ class Main(object):
             print_freq: int = 100,
             learning_rate: float = 0.001,
 
-            cudnn_benchmark: bool = True,
+            cudnn_benchmark: bool = False,
     ):
         """
         Start the training process with the given parameters
