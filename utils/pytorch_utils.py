@@ -1,5 +1,7 @@
 import torch
+from torch.cuda import empty_cache
 
+empty_cache()
 
 DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 # DEVICE = 'cpu'
